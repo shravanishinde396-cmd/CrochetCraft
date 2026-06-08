@@ -78,7 +78,7 @@ export default function Catalog() {
         const response = await fetch('http://localhost:5000/api/v1/products');
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.data.length > 0) {
+          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
             setProducts(data.data);
           }
         }

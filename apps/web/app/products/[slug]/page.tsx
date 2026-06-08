@@ -67,7 +67,7 @@ export default function ProductDetailPage() {
         const relRes = await fetch(`http://localhost:5000/api/v1/products/${slug}/related`);
         if (relRes.ok) {
           const relData = await relRes.json();
-          if (relData.success && relData.data) {
+          if (relData.success && Array.isArray(relData.data)) {
             setRelatedProducts(relData.data);
           }
         }
