@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
 import { Sparkles, RefreshCw } from 'lucide-react';
+import { API_BASE } from '../utils/apiFetch';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function LoginPage() {
       : { email: formData.email, password: formData.password };
 
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/auth/${endpoint}`, {
+      const response = await fetch(`${API_BASE}/api/v1/auth/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

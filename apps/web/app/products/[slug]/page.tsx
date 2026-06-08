@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCartStore, CartProduct } from '../../store/cartStore';
 import { ShoppingBag, ArrowLeft, Star, RefreshCw } from 'lucide-react';
 import ProductCard from '../../components/ProductCard';
+import { API_BASE } from '../../utils/apiFetch';
 
 interface Product {
   id: string;
@@ -52,7 +53,7 @@ export default function ProductDetailPage() {
       setLoading(true);
       try {
         // Fetch single product
-        const res = await fetch(`http://localhost:5000/api/v1/products/${slug}`);
+        const res = await fetch(`${API_BASE}/api/v1/products/${slug}`);
         if (res.ok) {
           const resData = await res.json();
           if (resData.success && resData.data) {
@@ -64,7 +65,7 @@ export default function ProductDetailPage() {
         }
         
         // Fetch related products
-        const relRes = await fetch(`http://localhost:5000/api/v1/products/${slug}/related`);
+        const relRes = await fetch(`${API_BASE}/api/v1/products/${slug}/related`);
         if (relRes.ok) {
           const relData = await relRes.json();
           if (relData.success && Array.isArray(relData.data)) {

@@ -6,22 +6,44 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { cloudinary } from '../config/cloudinary';
+
 const router = Router();
 
-// Configure multer disk storage for local uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+const isCloudinaryConfigured = 
+  process.env.CLOUDINARY_CLOUD_NAME && 
+  process.env.CLOUDINARY_CLOUD_NAME !== 'mock_cloudinary_cloud' &&
+  process.env.CLOUDINARY_CLOUD_NAME !== 'placeholder_cloud';
+
+let storage: any;
+
+if (isCloudinaryConfigured) {
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req: any, file: any) => {
+      return {
+        folder: 'crochetcraft',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
+        public_id: Date.now() + '-' + Math.round(Math.random() * 1e9),
+      };
+    },
+  });
+} else {
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, uniqueSuffix + path.extname(file.originalname));
     }
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+  });
+}
 
 const upload = multer({
   storage,
@@ -55,7 +77,7 @@ router.post('/upload', upload.single('image'), (req: any, res: any) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded.' });
     }
-    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const fileUrl = isCloudinaryConfigured ? req.file.path : `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     res.json({
       success: true,
       message: 'Image uploaded successfully.',
@@ -71,7 +93,9 @@ router.post('/upload-multiple', upload.array('images', 10), (req: any, res: any)
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ success: false, message: 'No files uploaded.' });
     }
-    const urls = req.files.map((file: any) => `${req.protocol}://${req.get('host')}/uploads/${file.filename}`);
+    const urls = req.files.map((file: any) => 
+      isCloudinaryConfigured ? file.path : `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+    );
     res.json({
       success: true,
       message: 'Images uploaded successfully.',

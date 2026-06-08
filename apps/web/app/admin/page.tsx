@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '../store/authStore';
-import { apiFetch } from '../utils/apiFetch';
+import { apiFetch, API_BASE } from '../utils/apiFetch';
 import { ShieldAlert, BarChart3, Package, HeartHandshake, Tag, Plus, Edit, Trash2, X, RefreshCw } from 'lucide-react';
 
 const MOCK_STATS = {
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
     formData.append('image', files[0]);
 
     try {
-      const response = await apiFetch('http://localhost:5000/api/v1/admin/upload', {
+      const response = await apiFetch(`${API_BASE}/api/v1/admin/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -135,7 +135,7 @@ export default function AdminDashboard() {
 
     async function fetchDashboardData() {
       try {
-        const response = await apiFetch('http://localhost:5000/api/v1/admin/dashboard');
+        const response = await apiFetch(`${API_BASE}/api/v1/admin/dashboard`);
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
 
     async function fetchCustomOrders() {
       try {
-        const response = await apiFetch('http://localhost:5000/api/v1/custom-orders/admin/all');
+        const response = await apiFetch(`${API_BASE}/api/v1/custom-orders/admin/all`);
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
     setLoadingProducts(true);
     try {
       // Load products
-      const prodRes = await fetch('http://localhost:5000/api/v1/products');
+      const prodRes = await fetch(`${API_BASE}/api/v1/products`);
       if (prodRes.ok) {
         const prodData = await prodRes.json();
         if (prodData.success && Array.isArray(prodData.data)) {
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
       }
 
       // Load categories
-      const catRes = await fetch('http://localhost:5000/api/v1/categories');
+      const catRes = await fetch(`${API_BASE}/api/v1/categories`);
       if (catRes.ok) {
         const catData = await catRes.json();
         if (catData.success && Array.isArray(catData.data)) {
@@ -270,8 +270,8 @@ export default function AdminDashboard() {
 
     const isEdit = !!editingProduct;
     const url = isEdit
-      ? `http://localhost:5000/api/v1/products/${editingProduct.id}`
-      : 'http://localhost:5000/api/v1/products';
+      ? `${API_BASE}/api/v1/products/${editingProduct.id}`
+      : `${API_BASE}/api/v1/products`;
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
     if (!confirm(`Are you sure you want to deactivate ${name}?`)) return;
 
     try {
-      const response = await apiFetch(`http://localhost:5000/api/v1/products/${id}`, {
+      const response = await apiFetch(`${API_BASE}/api/v1/products/${id}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
     };
 
     try {
-      const response = await apiFetch('http://localhost:5000/api/v1/coupons', {
+      const response = await apiFetch(`${API_BASE}/api/v1/coupons`, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
@@ -353,14 +353,14 @@ export default function AdminDashboard() {
 
   const handleUpdateCustomStatus = async (id: string, status: string, price: number, notes: string) => {
     try {
-      const response = await apiFetch(`http://localhost:5000/api/v1/custom-orders/${id}/status`, {
+      const response = await apiFetch(`${API_BASE}/api/v1/custom-orders/${id}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status, quotedPrice: price, adminNote: notes }),
       });
       if (response.ok) {
         alert('Custom order status updated successfully!');
         // Refresh custom orders
-        const refreshResponse = await apiFetch('http://localhost:5000/api/v1/custom-orders/admin/all');
+        const refreshResponse = await apiFetch(`${API_BASE}/api/v1/custom-orders/admin/all`);
         const data = await refreshResponse.json();
         if (data.success) {
           setCustomOrders(data.data);

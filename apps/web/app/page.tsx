@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ProductCard from './components/ProductCard';
 import { ArrowRight, Heart, Palette, Leaf } from 'lucide-react';
+import { API_BASE } from './utils/apiFetch';
 
 interface Product {
   id: string;
@@ -67,7 +68,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchFeatured() {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/products?limit=4');
+        const response = await fetch(`${API_BASE}/api/v1/products?limit=4`);
         if (response.ok) {
           const data = await response.json();
           if (data.success && Array.isArray(data.data) && data.data.length > 0) {

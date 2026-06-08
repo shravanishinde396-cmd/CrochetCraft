@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { Trash2, Plus, Minus, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
+import { API_BASE } from '../utils/apiFetch';
 
 export default function CartPage() {
   const { 
@@ -30,7 +31,7 @@ export default function CartPage() {
     if (!couponCode) return;
     setCouponStatus(null);
     try {
-      const response = await fetch('http://localhost:5000/api/v1/coupons/validate', {
+      const response = await fetch(`${API_BASE}/api/v1/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode, subtotal }),

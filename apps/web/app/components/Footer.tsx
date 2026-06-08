@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Send, ToyBrick } from 'lucide-react';
+import { API_BASE } from '../utils/apiFetch';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ export default function Footer() {
     e.preventDefault();
     if (!email) return;
     try {
-      const response = await fetch('http://localhost:5000/api/v1/newsletter/subscribe', {
+      const response = await fetch(`${API_BASE}/api/v1/newsletter/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

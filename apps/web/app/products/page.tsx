@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ProductCard from '../components/ProductCard';
 import { SlidersHorizontal, Search, RotateCcw } from 'lucide-react';
+import { API_BASE } from '../utils/apiFetch';
 
 interface Product {
   id: string;
@@ -75,7 +76,7 @@ export default function Catalog() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/products');
+        const response = await fetch(`${API_BASE}/api/v1/products`);
         if (response.ok) {
           const data = await response.json();
           if (data.success && Array.isArray(data.data) && data.data.length > 0) {

@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '../store/authStore';
 
-const API_BASE = 'http://localhost:5000';
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;

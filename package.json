@@ -12,6 +12,7 @@
     "dev:api": "npm run dev -w apps/api",
     "build:web": "npm run build -w apps/web",
     "build:api": "npm run build -w apps/api",
+    "start:api": "node apps/api/dist/server.js",
     "prisma:generate": "npm run generate -w apps/api",
     "prisma:migrate": "npm run migrate -w apps/api",
     "prisma:seed": "npm run seed -w apps/api"

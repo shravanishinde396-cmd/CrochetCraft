@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { apiFetch } from '../utils/apiFetch';
+import { apiFetch, API_BASE } from '../utils/apiFetch';
 import { Sparkles } from 'lucide-react';
 
 export default function CustomOrderPage() {
@@ -44,7 +44,7 @@ export default function CustomOrderPage() {
     };
 
     try {
-      const response = await apiFetch('http://localhost:5000/api/v1/custom-orders', {
+      const response = await apiFetch(`${API_BASE}/api/v1/custom-orders`, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
