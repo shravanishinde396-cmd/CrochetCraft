@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCartStore, CartProduct } from '../store/cartStore';
-import { ShoppingCart, Heart, Tag } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 
 interface ProductCardProps {
   product: {
@@ -15,6 +15,7 @@ interface ProductCardProps {
     images: string[];
     stock: number;
     category?: { name: string } | null;
+    bestSeller?: boolean;
   };
 }
 
@@ -43,19 +44,23 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-orange-50 flex flex-col h-full premium-card">
+    <div className={`bg-surface-container-lowest rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(224,64,160,0.08)] hover:shadow-[0_12px_32px_rgba(224,64,160,0.15)] transition-all duration-300 hover:scale-[1.03] flex flex-col group border border-surface-container-highest ${isOutOfStock ? 'opacity-75 grayscale-[0.2]' : ''}`}>
       {/* Product Image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-gray-50">
+      <div className="relative aspect-square overflow-hidden bg-surface-container">
         {hasSale && (
-          <div className="absolute top-3 left-3 bg-[#E07A5F] text-white text-xs font-bold px-2.5 py-1 rounded-full z-10 flex items-center gap-1 shadow-sm">
-            <Tag className="w-3.5 h-3.5" />
-            <span>SALE</span>
+          <div className="absolute top-3 left-3 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm z-10">
+            Sale
+          </div>
+        )}
+        {product.bestSeller && (
+          <div className="absolute top-3 left-3 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm z-10">
+            Bestseller
           </div>
         )}
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/45 flex items-center justify-center z-15 backdrop-blur-[1px]">
-            <span className="text-white text-sm font-bold tracking-wider bg-black/60 px-4 py-2 rounded-full">
-              OUT OF STOCK
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-10">
+            <span className="bg-surface text-on-surface font-black px-4 py-2 rounded-full shadow-lg uppercase tracking-widest text-xs">
+              Out of Stock
             </span>
           </div>
         )}
@@ -63,52 +68,50 @@ export default function ProductCard({ product }: ProductCardProps) {
           <img
             src={product.images?.[0] || 'https://via.placeholder.com/300?text=No+Image'}
             alt={product.title}
-            className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         </Link>
-        
-        {/* Wishlist Button Overlay */}
-        <button className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white text-[#3D405B] hover:text-[#E07A5F] rounded-full shadow-sm transition-all z-10">
-          <Heart className="w-4.5 h-4.5" />
+        <button className="absolute top-3 right-3 bg-white/90 backdrop-blur text-outline hover:text-primary p-2 rounded-full shadow-sm hover:shadow-md transition-all active:scale-90 z-10">
+          <Heart className="w-4 h-4" />
         </button>
       </div>
 
       {/* Details */}
-      <div className="p-5 flex flex-col flex-grow">
-        {product.category && (
-          <span className="text-xs text-[#81B29A] font-semibold tracking-wider uppercase mb-1">
-            {product.category.name}
-          </span>
-        )}
-        
-        <Link href={`/products/${product.slug}`} className="hover:text-[#E07A5F] transition-colors flex-grow">
-          <h3 className="font-bold text-lg text-[#3D405B] line-clamp-1 mb-2 leading-tight">
-            {product.title}
-          </h3>
-        </Link>
+      <div className="p-5 flex flex-col flex-grow justify-between gap-4">
+        <div>
+          {product.category && (
+            <p className="text-xs font-bold text-tertiary uppercase tracking-wider mb-1">
+              {product.category.name}
+            </p>
+          )}
+          <Link href={`/products/${product.slug}`}>
+            <h3 className="font-bold text-lg text-on-background leading-tight hover:text-primary transition-colors">
+              {product.title}
+            </h3>
+          </Link>
+        </div>
 
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-orange-50/50">
-          {/* Price block */}
-          <div className="flex items-baseline space-x-2">
-            <span className="text-xl font-bold text-[#E07A5F]">Rs. {currentPrice}</span>
+        <div className="flex items-end justify-between mt-auto">
+          <div className="flex flex-col">
+            <span className="font-black text-2xl text-primary">₹{currentPrice}</span>
             {hasSale && (
-              <span className="text-sm text-gray-400 line-through">Rs. {product.price}</span>
+              <span className="text-xs text-outline line-through">₹{product.price}</span>
             )}
           </div>
-
-          {/* Quick Add Cart Icon */}
-          <button
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className={`p-2.5 rounded-full shadow-sm transition-all duration-300 ${
-              isOutOfStock
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-orange-50 text-[#E07A5F] hover:bg-[#E07A5F] hover:text-white'
-            }`}
-          >
-            <ShoppingCart className="w-5 h-5" />
-          </button>
         </div>
+
+        <button
+          onClick={handleAddToCart}
+          disabled={isOutOfStock}
+          className={`w-full font-bold py-3 px-4 rounded-full flex items-center justify-center gap-2 transition-all ${
+            isOutOfStock
+              ? 'bg-surface-variant text-outline cursor-not-allowed'
+              : 'bg-primary hover:bg-[#c9328c] text-white shadow-[0_4px_16px_rgba(224,64,160,0.2)] active:scale-95'
+          }`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          <span>{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
+        </button>
       </div>
     </div>
   );

@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import { Outfit } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
 import './globals.css';
 import Providers from './components/Providers';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
-const outfit = Outfit({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-outfit',
+  weight: ['400', '500', '700', '900'],
+  variable: '--font-dm-sans',
 });
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable}`}>
+    <html lang="en" className={`${dmSans.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
