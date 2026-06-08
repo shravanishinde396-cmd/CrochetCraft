@@ -40,7 +40,7 @@ export default function LoginPage() {
 
       const data = await response.json();
       if (response.ok && data.success) {
-        setAuth(data.data.user, data.data.accessToken);
+        setAuth(data.data.user, data.data.accessToken, data.data.refreshToken);
         router.push('/');
       } else {
         if (data.errors && data.errors.length > 0) {

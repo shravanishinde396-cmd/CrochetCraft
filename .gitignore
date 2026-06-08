@@ -5,6 +5,9 @@ node_modules/
 pgdata/
 *.log
 
+# Uploaded files
+uploads/
+
 # Build/Dist directories
 dist/
 .next/

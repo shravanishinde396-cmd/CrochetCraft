@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
@@ -12,7 +12,12 @@ export default function Navbar() {
   const { items } = useCartStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const cartCount = items.reduce((acc, curr) => acc + curr.quantity, 0);
 
@@ -38,7 +43,7 @@ export default function Navbar() {
           <Link href="/" className={getLinkClass('/')}>Home</Link>
           <Link href="/products" className={getLinkClass('/products')}>Shop</Link>
           <Link href="/custom" className={getLinkClass('/custom')}>Custom</Link>
-          {user?.role === 'ADMIN' && (
+          {mounted && user?.role === 'ADMIN' && (
             <Link href="/admin" className="text-secondary hover:text-primary transition-colors flex items-center gap-1 font-bold">
               <Shield className="w-4 h-4" />
               Admin
@@ -51,7 +56,7 @@ export default function Navbar() {
           {/* Cart */}
           <Link href="/cart" className="relative text-primary hover:scale-105 transition-transform duration-200 cursor-pointer active:scale-95 p-2 rounded-full hover:bg-primary-container/20">
             <ShoppingBag className="w-6 h-6" />
-            {cartCount > 0 && (
+            {mounted && cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-secondary text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-sm">
                 {cartCount}
               </span>
@@ -59,7 +64,7 @@ export default function Navbar() {
           </Link>
 
           {/* User Account */}
-          {isAuthenticated ? (
+          {mounted && isAuthenticated ? (
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -88,14 +93,14 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : mounted ? (
             <Link
               href="/login"
               className="bg-primary text-on-primary px-6 py-2 rounded-full font-bold text-sm hover:opacity-90 transition-opacity active:scale-95"
             >
               Login
             </Link>
-          )}
+          ) : null}
 
           {/* Mobile Menu Toggle */}
           <button
@@ -113,7 +118,7 @@ export default function Navbar() {
           <Link href="/" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Home</Link>
           <Link href="/products" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
           <Link href="/custom" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Custom Request</Link>
-          {user?.role === 'ADMIN' && (
+          {mounted && user?.role === 'ADMIN' && (
             <Link href="/admin" className="text-secondary font-bold" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link>
           )}
         </div>

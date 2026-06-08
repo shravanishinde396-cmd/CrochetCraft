@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '../store/authStore';
+import { apiFetch } from '../utils/apiFetch';
 import { ShieldAlert, BarChart3, Package, HeartHandshake, Tag, Plus, Edit, Trash2, X, RefreshCw } from 'lucide-react';
 
 const MOCK_STATS = {
@@ -44,6 +45,7 @@ const DEFAULT_PRODUCT_FORM = {
 export default function AdminDashboard() {
   const { user, accessToken } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'stats' | 'products' | 'custom' | 'coupons'>('stats');
+  const [mounted, setMounted] = useState(false);
   const [dashboardData, setDashboardData] = useState<any>(MOCK_STATS);
 
   // Categories & Products state
@@ -57,6 +59,7 @@ export default function AdminDashboard() {
   const [productForm, setProductForm] = useState(DEFAULT_PRODUCT_FORM);
   const [productStatus, setProductStatus] = useState<string | null>(null);
   const [savingProduct, setSavingProduct] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Coupon form state
   const [couponForm, setCouponForm] = useState({
@@ -88,14 +91,51 @@ export default function AdminDashboard() {
     }));
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('image', files[0]);
+
+    try {
+      const response = await apiFetch('http://localhost:5000/api/v1/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success && data.url) {
+        setProductForm(prev => {
+          const currentImages = prev.images.trim();
+          const separator = currentImages ? ', ' : '';
+          return {
+            ...prev,
+            images: currentImages + separator + data.url,
+          };
+        });
+      } else {
+        alert(data.message || 'Image upload failed.');
+      }
+    } catch (err) {
+      console.error('Error uploading image', err);
+      alert('Could not connect to the image upload service.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (user?.role !== 'ADMIN') return;
 
     async function fetchDashboardData() {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/admin/dashboard', {
-          headers: { 'Authorization': `Bearer ${accessToken}` },
-        });
+        const response = await apiFetch('http://localhost:5000/api/v1/admin/dashboard');
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -109,9 +149,7 @@ export default function AdminDashboard() {
 
     async function fetchCustomOrders() {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/custom-orders/admin/all', {
-          headers: { 'Authorization': `Bearer ${accessToken}` },
-        });
+        const response = await apiFetch('http://localhost:5000/api/v1/custom-orders/admin/all');
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -237,12 +275,8 @@ export default function AdminDashboard() {
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
         body: JSON.stringify(payload),
       });
 
@@ -265,11 +299,8 @@ export default function AdminDashboard() {
     if (!confirm(`Are you sure you want to deactivate ${name}?`)) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/products/${id}`, {
+      const response = await apiFetch(`http://localhost:5000/api/v1/products/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
       });
       if (response.ok) {
         alert('Product deactivated successfully.');
@@ -296,12 +327,8 @@ export default function AdminDashboard() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/coupons', {
+      const response = await apiFetch('http://localhost:5000/api/v1/coupons', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
         body: JSON.stringify(payload),
       });
 
@@ -326,20 +353,14 @@ export default function AdminDashboard() {
 
   const handleUpdateCustomStatus = async (id: string, status: string, price: number, notes: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/custom-orders/${id}/status`, {
+      const response = await apiFetch(`http://localhost:5000/api/v1/custom-orders/${id}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
         body: JSON.stringify({ status, quotedPrice: price, adminNote: notes }),
       });
       if (response.ok) {
         alert('Custom order status updated successfully!');
         // Refresh custom orders
-        const refreshResponse = await fetch('http://localhost:5000/api/v1/custom-orders/admin/all', {
-          headers: { 'Authorization': `Bearer ${accessToken}` },
-        });
+        const refreshResponse = await apiFetch('http://localhost:5000/api/v1/custom-orders/admin/all');
         const data = await refreshResponse.json();
         if (data.success) {
           setCustomOrders(data.data);
@@ -349,6 +370,15 @@ export default function AdminDashboard() {
       alert('Failed to update status.');
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-center min-h-[80vh]">
+        <RefreshCw className="w-12 h-12 text-primary animate-spin mb-4" />
+        <p className="text-on-surface-variant font-bold">Unspooling admin console...</p>
+      </div>
+    );
+  }
 
   if (user?.role !== 'ADMIN') {
     return (
@@ -902,16 +932,73 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-black text-on-surface uppercase tracking-wider mb-1">Product Images (comma-separated URLs)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. /images/products/bunny-1.jpg, /images/products/bunny-2.jpg"
-                  className="w-full bg-surface-container border-0 text-sm px-5 py-3 rounded-full focus:ring-1 focus:ring-primary focus:outline-none"
-                  value={productForm.images}
-                  onChange={(e) => setProductForm({ ...productForm, images: e.target.value })}
-                />
-              </div>
+              {(() => {
+                const currentImagesArray = productForm.images
+                  ? productForm.images.split(',').map((img: string) => img.trim()).filter(Boolean)
+                  : [];
+                return (
+                  <div>
+                    <label className="block text-[10px] font-black text-on-surface uppercase tracking-wider mb-1">Product Images</label>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="e.g. /images/products/bunny-1.jpg, /images/products/bunny-2.jpg"
+                        className="w-full bg-surface-container border-0 text-sm px-5 py-3 rounded-full focus:ring-1 focus:ring-primary focus:outline-none"
+                        value={productForm.images}
+                        onChange={(e) => setProductForm({ ...productForm, images: e.target.value })}
+                      />
+                      
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2 px-5 py-2.5 bg-secondary hover:opacity-90 text-on-secondary text-xs font-bold rounded-full cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-sm">
+                          {uploadingImage ? (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              <span>Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Upload Image from System</span>
+                            </>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
+                          />
+                        </label>
+                        <span className="text-[10px] text-on-surface-variant font-medium">PNG, JPG, WEBP, GIF up to 5MB</span>
+                      </div>
+
+                      {currentImagesArray.length > 0 && (
+                        <div className="bg-surface-container/30 p-4 rounded-2xl border border-outline-variant/20 space-y-2">
+                          <span className="text-[9px] font-black text-on-surface-variant uppercase tracking-wider block">Uploaded Images Preview (Hover to Delete)</span>
+                          <div className="flex flex-wrap gap-3">
+                            {currentImagesArray.map((imgUrl, idx) => (
+                              <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-outline-variant group shadow-sm bg-white">
+                                <img src={imgUrl} alt="Preview" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = currentImagesArray.filter((_, i) => i !== idx).join(', ');
+                                    setProductForm({ ...productForm, images: updated });
+                                  }}
+                                  className="absolute inset-0 bg-error/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white"
+                                  title="Delete image"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

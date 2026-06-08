@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { apiFetch } from '../utils/apiFetch';
 import { Sparkles } from 'lucide-react';
 
 export default function CustomOrderPage() {
-  const { isAuthenticated, accessToken } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -43,12 +44,8 @@ export default function CustomOrderPage() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/custom-orders', {
+      const response = await apiFetch('http://localhost:5000/api/v1/custom-orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
         body: JSON.stringify(payload),
       });
 

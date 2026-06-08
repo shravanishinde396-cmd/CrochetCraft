@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import hpp from 'hpp';
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config();
 
@@ -34,8 +35,13 @@ import adminRoutes from './routes/admin.routes';
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
 app.use(hpp());
+
+// Serve uploads statically
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // CORS
 app.use(cors({
