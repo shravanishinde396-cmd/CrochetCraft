@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: 14 63% 62%;    /* #E07A5F Peach/Coral */
+  --secondary: 156 26% 60%; /* #81B29A Soft Sage */
+  --dark: 235 20% 30%;      /* #3D405B Deep Slate */
+  --light: 49 53% 91%;      /* #F4F1DE Cream/Ivory */
+  --gold: 37 78% 75%;       /* #F2CC8F Warm Gold */
+
+  --background: 49 53% 96%;  /* Off-white warm background */
+  --foreground: 235 20% 18%; /* Deep Slate dark text */
+  --card: 0 0% 100%;
+  --card-foreground: 235 20% 18%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 235 20% 18%;
+  
+  --border: 235 20% 90%;
+  --input: 235 20% 90%;
+  --ring: 14 63% 62%;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Glassmorphism card panel helper */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, #d45f43 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom premium buttons */
+.btn-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, #d45f43 100%);
+  color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(224, 122, 95, 0.3);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(224, 122, 95, 0.45);
+}
+
+.btn-secondary {
+  background-color: hsl(var(--secondary));
+  color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(129, 178, 154, 0.3);
+}
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(129, 178, 154, 0.45);
+}
+
+/* Custom cards styling */
+.premium-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.premium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(61, 64, 91, 0.15);
+}

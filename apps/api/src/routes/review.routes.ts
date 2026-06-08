@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { getProductReviews, createReview, updateReview, deleteReview, markHelpful } from '../controllers/review.controller';
+import { protect } from '../middleware/auth.middleware';
+
+const router = Router();
+
+router.get('/product/:productId', getProductReviews);
+router.post('/', protect, createReview);
+router.put('/:id', protect, updateReview);
+router.delete('/:id', protect, deleteReview);
+router.post('/:id/helpful', protect, markHelpful);
+
+export default router;

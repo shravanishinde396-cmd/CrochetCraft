@@ -1,0 +1,19 @@
+{
+  "name": "crochetcraft-pro",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/api",
+    "packages/shared-types"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "build:web": "npm run build -w apps/web",
+    "build:api": "npm run build -w apps/api",
+    "prisma:generate": "npm run generate -w apps/api",
+    "prisma:migrate": "npm run migrate -w apps/api",
+    "prisma:seed": "npm run seed -w apps/api"
+  }
+}
