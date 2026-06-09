@@ -4,13 +4,12 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  previewFeatures = ["fullTextIndex"]
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "mongodb"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 // ─────────────────────────────────────────────
@@ -83,7 +82,7 @@ enum StockStatus {
 // ─────────────────────────────────────────────
 
 model User {
-  id               String   @id @default(cuid())
+  id               String   @id @default(cuid()) @map("_id")
   name             String
   email            String   @unique
   password         String?
@@ -109,14 +108,12 @@ model User {
   newsletterSub    NewsletterSubscriber?
   passwordResets   PasswordReset[]
   refreshTokens    RefreshToken[]
-
-  @@index([email])
   @@index([role])
   @@map("users")
 }
 
 model Address {
-  id         String  @id @default(cuid())
+  id         String  @id @default(cuid()) @map("_id")
   userId     String
   fullName   String
   phone      String
@@ -137,21 +134,19 @@ model Address {
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   token     String   @unique
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
   @@index([userId])
   @@map("refresh_tokens")
 }
 
 model PasswordReset {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   token     String   @unique
   userId    String
   expiresAt DateTime
@@ -159,8 +154,6 @@ model PasswordReset {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
   @@map("password_resets")
 }
 
@@ -169,7 +162,7 @@ model PasswordReset {
 // ─────────────────────────────────────────────
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String    @id @default(cuid()) @map("_id")
   name        String    @unique
   slug        String    @unique
   description String?
@@ -181,8 +174,6 @@ model Category {
 
   products    Product[]
   coupons     Coupon[]
-
-  @@index([slug])
   @@map("categories")
 }
 
@@ -191,7 +182,7 @@ model Category {
 // ─────────────────────────────────────────────
 
 model Product {
-  id              String      @id @default(cuid())
+  id              String      @id @default(cuid()) @map("_id")
   title           String
   slug            String      @unique
   description     String
@@ -227,8 +218,6 @@ model Product {
   cartItems       CartItem[]
   browsingHistory BrowsingHistory[]
   inventoryLogs   InventoryLog[]
-
-  @@index([slug])
   @@index([categoryId])
   @@index([featured])
   @@index([bestSeller])
@@ -240,7 +229,7 @@ model Product {
 }
 
 model InventoryLog {
-  id         String   @id @default(cuid())
+  id         String   @id @default(cuid()) @map("_id")
   productId  String
   quantity   Int      // positive = restock, negative = sale/deduction
   reason     String   // "ORDER", "RESTOCK", "MANUAL_ADJUSTMENT", "RETURN"
@@ -258,7 +247,7 @@ model InventoryLog {
 // ─────────────────────────────────────────────
 
 model WishlistItem {
-  id         String   @id @default(cuid())
+  id         String   @id @default(cuid()) @map("_id")
   userId     String
   productId  String
   createdAt  DateTime @default(now())
@@ -276,7 +265,7 @@ model WishlistItem {
 // ─────────────────────────────────────────────
 
 model CartItem {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   userId    String
   productId String
   quantity  Int      @default(1)
@@ -297,7 +286,7 @@ model CartItem {
 // ─────────────────────────────────────────────
 
 model Coupon {
-  id             String       @id @default(cuid())
+  id             String       @id @default(cuid()) @map("_id")
   code           String       @unique
   description    String?
   discountType   DiscountType
@@ -316,14 +305,12 @@ model Coupon {
   category       Category?    @relation(fields: [categoryId], references: [id])
   orders         Order[]
   usages         CouponUsage[]
-
-  @@index([code])
   @@index([isActive])
   @@map("coupons")
 }
 
 model CouponUsage {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   couponId  String
   userId    String
   orderId   String?
@@ -340,7 +327,7 @@ model CouponUsage {
 // ─────────────────────────────────────────────
 
 model Order {
-  id              String        @id @default(cuid())
+  id              String        @id @default(cuid()) @map("_id")
   orderNumber     String        @unique
   userId          String
   addressId       String
@@ -374,7 +361,6 @@ model Order {
   refunds         Refund[]
 
   @@index([userId])
-  @@index([orderNumber])
   @@index([orderStatus])
   @@index([paymentStatus])
   @@index([createdAt])
@@ -382,7 +368,7 @@ model Order {
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
+  id         String   @id @default(cuid()) @map("_id")
   orderId    String
   productId  String
   title      String   // snapshot at order time
@@ -400,7 +386,7 @@ model OrderItem {
 }
 
 model OrderStatusHistory {
-  id          String      @id @default(cuid())
+  id          String      @id @default(cuid()) @map("_id")
   orderId     String
   status      OrderStatus
   note        String?
@@ -418,7 +404,7 @@ model OrderStatusHistory {
 // ─────────────────────────────────────────────
 
 model Review {
-  id               String   @id @default(cuid())
+  id               String   @id @default(cuid()) @map("_id")
   userId           String
   productId        String
   orderId          String?
@@ -447,7 +433,7 @@ model Review {
 // ─────────────────────────────────────────────
 
 model Refund {
-  id              String       @id @default(cuid())
+  id              String       @id @default(cuid()) @map("_id")
   orderId         String
   userId          String
   reason          String
@@ -475,7 +461,7 @@ model Refund {
 // ─────────────────────────────────────────────
 
 model CustomOrder {
-  id               String            @id @default(cuid())
+  id               String            @id @default(cuid()) @map("_id")
   userId           String
   name             String
   email            String
@@ -504,7 +490,7 @@ model CustomOrder {
 // ─────────────────────────────────────────────
 
 model BrowsingHistory {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   userId      String
   productId   String
   viewedAt    DateTime @default(now())
@@ -524,7 +510,7 @@ model BrowsingHistory {
 // ─────────────────────────────────────────────
 
 model NewsletterSubscriber {
-  id           String   @id @default(cuid())
+  id           String   @id @default(cuid()) @map("_id")
   email        String   @unique
   userId       String?  @unique
   isSubscribed Boolean  @default(true)
@@ -532,8 +518,6 @@ model NewsletterSubscriber {
   unsubscribedAt DateTime?
 
   user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([email])
   @@map("newsletter_subscribers")
 }
 
@@ -542,7 +526,7 @@ model NewsletterSubscriber {
 // ─────────────────────────────────────────────
 
 model AnalyticsEvent {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   event     String   // "PAGE_VIEW", "PRODUCT_VIEW", "ADD_TO_CART", "PURCHASE"
   userId    String?
   sessionId String?
@@ -561,7 +545,7 @@ model AnalyticsEvent {
 // ─────────────────────────────────────────────
 
 model AbandonedCartEmail {
-  id            String   @id @default(cuid())
+  id            String   @id @default(cuid()) @map("_id")
   userId        String
   emailSentAt   DateTime @default(now())
   cartSnapshot  Json
