@@ -138,6 +138,7 @@ export const useCartStore = create<CartState>((set, get) => {
         } else {
           discount = coupon.discountValue;
         }
+        discount = Math.min(discount, subtotal);
       }
 
       const shipping = subtotal === 0 ? 0 : subtotal >= 1000 ? 0 : 80;
