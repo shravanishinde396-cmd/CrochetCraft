@@ -8,8 +8,10 @@ interface SendMailParams {
 }
 
 export const sendMail = async ({ to, subject, html }: SendMailParams) => {
-  try {
-    if (resend) {
+  let resendFailed = false;
+
+  if (resend) {
+    try {
       const { data, error } = await resend.emails.send({
         from: `${EMAIL_FROM_NAME} <${EMAIL_FROM}>`,
         to: [to],
@@ -21,7 +23,15 @@ export const sendMail = async ({ to, subject, html }: SendMailParams) => {
       }
       logger.info(`Email sent via Resend to ${to}: ${subject}`);
       return data;
-    } else if (transporter) {
+    } catch (error) {
+      logger.warn(`Failed to send email to ${to} via Resend. Falling back to SMTP if available. Error: ${error}`);
+      resendFailed = true;
+    }
+  }
+
+  // If resend wasn't configured, or if resend failed, use Nodemailer SMTP
+  if ((!resend || resendFailed) && transporter) {
+    try {
       const info = await transporter.sendMail({
         from: `"${EMAIL_FROM_NAME}" <${process.env.SMTP_USER || EMAIL_FROM}>`,
         to,
@@ -30,13 +40,15 @@ export const sendMail = async ({ to, subject, html }: SendMailParams) => {
       });
       logger.info(`Email sent via SMTP to ${to}: ${subject}`);
       return info;
-    } else {
-      logger.warn(`Email not sent. No email service configured. Target: ${to}, Subject: ${subject}`);
+    } catch (smtpError) {
+      logger.error(`Failed to send email to ${to} via SMTP fallback:`, smtpError);
       return null;
     }
-  } catch (error) {
-    logger.error(`Failed to send email to ${to}:`, error);
-    return null;
   }
+
+  if (!resend && !transporter) {
+    logger.warn(`Email not sent. No email service configured. Target: ${to}, Subject: ${subject}`);
+  }
+  return null;
 };
 export default sendMail;

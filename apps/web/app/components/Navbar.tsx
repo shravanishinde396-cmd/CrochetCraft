@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
-import { ShoppingBag, User, LogOut, Menu, X, Shield, ToyBrick } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Menu, X, Shield, ToyBrick, Truck } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuthStore();
@@ -80,6 +80,15 @@ export default function Navbar() {
                     Logged in as: <span className="text-primary">{user?.name}</span>
                   </div>
                   <hr className="my-1 border-outline-variant/50" />
+                  <Link
+                    href="/track-order"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="w-full text-left block px-4 py-2 text-sm text-on-surface hover:bg-surface-container flex items-center space-x-2"
+                  >
+                    <Truck className="w-4 h-4 text-primary" />
+                    <span>Track Orders</span>
+                  </Link>
+                  <hr className="my-1 border-outline-variant/50" />
                   <button
                     onClick={() => {
                       logout();
@@ -118,6 +127,9 @@ export default function Navbar() {
           <Link href="/" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Home</Link>
           <Link href="/products" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
           <Link href="/custom" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Custom Request</Link>
+          {mounted && isAuthenticated && (
+            <Link href="/track-order" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Track Orders</Link>
+          )}
           {mounted && user?.role === 'ADMIN' && (
             <Link href="/admin" className="text-secondary font-bold" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link>
           )}
