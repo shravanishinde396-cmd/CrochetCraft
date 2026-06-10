@@ -85,11 +85,16 @@ app.use('/api', globalLimiter);
 
 // Health check
 app.get('/api/health', (req, res) => {
+  const { resend, transporter } = require('./config/email');
   res.status(200).json({
     success: true,
     message: 'CrochetCraft Pro API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
+    emailConfig: {
+      resendActive: !!resend,
+      smtpActive: !!transporter,
+    }
   });
 });
 
