@@ -90,7 +90,7 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
 
     logger.info(`Sending new coupon email to ${recipients.size} unique recipients (customers and subscribers)...`);
 
-    for (const [email, name] of recipients.entries()) {
+    const sendPromises = Array.from(recipients.entries()).map(([email, name]) => {
       const emailHtml = getNewOfferHtml(
         name,
         coupon.code,
@@ -100,12 +100,16 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
         coupon.description || undefined
       );
 
-      await sendMail({
+      return sendMail({
         to: email,
         subject: `New Offer: Get ${coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `Rs. ${coupon.discountValue}`} OFF!`,
         html: emailHtml,
+      }).catch(err => {
+        logger.error(`Failed to send coupon email to ${email}:`, err);
       });
-    }
+    });
+
+    await Promise.allSettled(sendPromises);
   }).catch((err) => {
     logger.error('Failed to notify users about new coupon:', err);
   });
