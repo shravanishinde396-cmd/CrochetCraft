@@ -3,6 +3,9 @@ import { prisma } from '../config/database';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../middleware/asyncHandler';
+import { sendMail } from '../utils/emailSender';
+import { getNewOfferHtml } from '../utils/emailTemplates';
+import logger from '../utils/logger';
 
 // POST /coupons/validate
 export const validateCoupon = asyncHandler(async (req: any, res: Response) => {
@@ -61,6 +64,34 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
   const coupon = await prisma.coupon.create({
     data: { code: code.toUpperCase(), description, discountType, discountValue, minimumOrder, maximumDiscount, usageLimit, expiryDate: new Date(expiryDate), isFirstPurchase: isFirstPurchase || false, categoryId },
   });
+
+  // Query active newsletter subscribers and send them email notifications in the background
+  prisma.newsletterSubscriber.findMany({
+    where: { isSubscribed: true },
+    include: { user: true },
+  }).then(async (subscribers) => {
+    logger.info(`Sending new coupon email to ${subscribers.length} newsletter subscribers...`);
+    for (const sub of subscribers) {
+      const recipientName = sub.user?.name || 'Craft Lover';
+      const emailHtml = getNewOfferHtml(
+        recipientName,
+        coupon.code,
+        coupon.discountValue,
+        coupon.discountType,
+        coupon.expiryDate,
+        coupon.description || undefined
+      );
+
+      await sendMail({
+        to: sub.email,
+        subject: `New Offer: Get ${coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `Rs. ${coupon.discountValue}`} OFF!`,
+        html: emailHtml,
+      });
+    }
+  }).catch((err) => {
+    logger.error('Failed to notify subscribers about new coupon:', err);
+  });
+
   res.status(201).json(new ApiResponse(201, coupon, 'Coupon created.'));
 });
 

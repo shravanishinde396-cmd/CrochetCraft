@@ -214,3 +214,29 @@ export const getNewsletterWelcomeHtml = (email: string) => {
     <p>Stay tuned for some amazing crochet inspiration!</p>
   `);
 };
+
+export const getNewOfferHtml = (name: string, code: string, discountValue: number, discountType: string, expiryDate: Date, description?: string) => {
+  const discountStr = discountType === 'PERCENTAGE' ? `${discountValue}%` : `Rs. ${discountValue}`;
+  const formattedExpiry = expiryDate.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  return getEmailLayout('New Offer Generated!', `
+    <h2>Exclusive Offer for You!</h2>
+    <p>Hi ${name || 'Craft Lover'},</p>
+    <p>We have generated a new special discount code just for you! Make the most of this offer on our beautiful handmade crochet collections.</p>
+    ${description ? `<p style="font-style: italic; color: #666; margin: 15px 0;">"${description}"</p>` : ''}
+    <div style="background-color: ${BRAND_COLOR_LIGHT}; border: 2px dashed ${BRAND_COLOR_PRIMARY}; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+      <p style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: ${BRAND_COLOR_DARK};">Your Coupon Code</p>
+      <h3 style="margin: 10px 0; font-size: 28px; color: ${BRAND_COLOR_PRIMARY}; letter-spacing: 2px;">${code}</h3>
+      <p style="margin: 0; font-size: 18px; font-weight: bold; color: ${BRAND_COLOR_SECONDARY};">Get ${discountStr} OFF</p>
+      <p style="margin: 10px 0 0 0; font-size: 12px; color: #888;">Valid until ${formattedExpiry}</p>
+    </div>
+    <p>Explore our premium collections of handmade flowers, bouquets, keychains, and toys. Don't wait too long—crafted pieces sell out quickly!</p>
+    <div style="text-align: center;">
+      <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/products" class="btn">Shop Now with Offer</a>
+    </div>
+  `);
+};
