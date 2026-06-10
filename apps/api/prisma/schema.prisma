@@ -553,3 +553,15 @@ model AbandonedCartEmail {
   @@index([userId])
   @@map("abandoned_cart_emails")
 }
+
+model EmailLog {
+  id        String   @id @default(cuid()) @map("_id")
+  to        String
+  subject   String
+  service   String
+  status    String
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@map("email_logs")
+}

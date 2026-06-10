@@ -1,4 +1,5 @@
 import { resend, transporter, EMAIL_FROM, EMAIL_FROM_NAME } from '../config/email';
+import { prisma } from '../config/database';
 import logger from './logger';
 
 interface SendMailParams {
@@ -22,9 +23,20 @@ export const sendMail = async ({ to, subject, html }: SendMailParams) => {
         throw error;
       }
       logger.info(`Email sent via Resend to ${to}: ${subject}`);
+      
+      await prisma.emailLog.create({
+        data: { to, subject, service: 'RESEND', status: 'SUCCESS' }
+      }).catch(dbErr => logger.error('Failed to write email log:', dbErr));
+
       return data;
-    } catch (error) {
-      logger.warn(`Failed to send email to ${to} via Resend. Falling back to SMTP if available. Error: ${error}`);
+    } catch (error: any) {
+      const errMsg = error?.message || JSON.stringify(error) || String(error);
+      logger.warn(`Failed to send email to ${to} via Resend. Falling back to SMTP if available. Error: ${errMsg}`);
+      
+      await prisma.emailLog.create({
+        data: { to, subject, service: 'RESEND', status: 'FAILED', error: errMsg }
+      }).catch(dbErr => logger.error('Failed to write email log:', dbErr));
+
       resendFailed = true;
     }
   }
@@ -39,15 +51,29 @@ export const sendMail = async ({ to, subject, html }: SendMailParams) => {
         html,
       });
       logger.info(`Email sent via SMTP to ${to}: ${subject}`);
+
+      await prisma.emailLog.create({
+        data: { to, subject, service: 'SMTP', status: 'SUCCESS' }
+      }).catch(dbErr => logger.error('Failed to write email log:', dbErr));
+
       return info;
-    } catch (smtpError) {
+    } catch (smtpError: any) {
+      const errMsg = smtpError?.message || JSON.stringify(smtpError) || String(smtpError);
       logger.error(`Failed to send email to ${to} via SMTP fallback:`, smtpError);
+
+      await prisma.emailLog.create({
+        data: { to, subject, service: 'SMTP', status: 'FAILED', error: errMsg }
+      }).catch(dbErr => logger.error('Failed to write email log:', dbErr));
+
       return null;
     }
   }
 
   if (!resend && !transporter) {
     logger.warn(`Email not sent. No email service configured. Target: ${to}, Subject: ${subject}`);
+    await prisma.emailLog.create({
+      data: { to, subject, service: 'NONE', status: 'FAILED', error: 'No email service configured' }
+    }).catch(dbErr => logger.error('Failed to write email log:', dbErr));
   }
   return null;
 };
