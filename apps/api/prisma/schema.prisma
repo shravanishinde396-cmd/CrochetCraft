@@ -89,7 +89,7 @@ model User {
   phone            String?
   role             Role     @default(CUSTOMER)
   avatar           String?
-  googleId         String?  @unique
+  googleId         String?
   emailVerified    Boolean  @default(false)
   isActive         Boolean  @default(true)
   lastLoginAt      DateTime?
@@ -105,7 +105,7 @@ model User {
   refunds          Refund[]
   customOrders     CustomOrder[]
   browsingHistory  BrowsingHistory[]
-  newsletterSub    NewsletterSubscriber?
+  newsletterSubs   NewsletterSubscriber[]
   passwordResets   PasswordReset[]
   refreshTokens    RefreshToken[]
   @@index([role])
@@ -512,7 +512,7 @@ model BrowsingHistory {
 model NewsletterSubscriber {
   id           String   @id @default(cuid()) @map("_id")
   email        String   @unique
-  userId       String?  @unique
+  userId       String?
   isSubscribed Boolean  @default(true)
   subscribedAt DateTime @default(now())
   unsubscribedAt DateTime?
