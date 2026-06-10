@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useCartStore, CartProduct } from '../../store/cartStore';
 import { ShoppingBag, ArrowLeft, Star, RefreshCw } from 'lucide-react';
@@ -164,10 +165,13 @@ export default function ProductDetailPage() {
           {/* Left: Product Images */}
           <div className="lg:col-span-6 space-y-4">
             <div className="w-full aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-[0_8px_32px_rgba(224,64,160,0.15)] border-4 border-white relative bg-surface-container">
-              <img 
+              <Image 
                 alt={product.title} 
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                className="object-cover transition-transform duration-500 hover:scale-105" 
                 src={mainImage || 'https://via.placeholder.com/600'} 
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
               />
               <span className="absolute top-4 left-4 bg-secondary text-white text-xs font-black px-4 py-1.5 rounded-full shadow-md">
                 Handmade
@@ -181,11 +185,11 @@ export default function ProductDetailPage() {
                   <button
                     key={i}
                     onClick={() => setMainImage(img)}
-                    className={`w-24 h-20 rounded-2xl overflow-hidden border-2 transition-all ${
+                    className={`w-24 h-20 rounded-2xl overflow-hidden border-2 transition-all relative ${
                       mainImage === img ? 'border-primary scale-105' : 'border-outline-variant/40 opacity-70'
                     }`}
                   >
-                    <img alt="Thumbnail" className="w-full h-full object-cover" src={img} />
+                    <Image alt="Thumbnail" className="object-cover" src={img} fill sizes="96px" />
                   </button>
                 ))}
               </div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { Trash2, Plus, Minus, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
@@ -104,11 +105,13 @@ export default function CartPage() {
                   key={item.product.id} 
                   className="bg-white/70 backdrop-blur rounded-[2rem] p-6 flex flex-col sm:flex-row items-center gap-6 border border-white/50 shadow-[0_8px_32px_rgba(224,64,160,0.08)] hover:scale-[1.01] transition-transform duration-300 group"
                 >
-                  <div className="w-32 h-32 rounded-2xl overflow-hidden shrink-0 shadow-md">
-                    <img 
+                  <div className="w-32 h-32 rounded-2xl overflow-hidden shrink-0 shadow-md relative">
+                    <Image 
                       alt={item.product.title} 
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
+                      className="object-cover transform group-hover:scale-110 transition-transform duration-500" 
                       src={item.product.images?.[0] || 'https://via.placeholder.com/150'} 
+                      fill
+                      sizes="128px"
                     />
                   </div>
                   

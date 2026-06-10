@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import ProductCard from './components/ProductCard';
 import { ArrowRight, Heart, Palette, Leaf } from 'lucide-react';
 import { API_BASE } from './utils/apiFetch';
@@ -88,10 +89,13 @@ export default function Home() {
         
         {/* Hero Section */}
         <section className="relative rounded-xl overflow-hidden mt-8 shadow-[0_8px_24px_rgba(224,64,160,0.2)] hover:scale-[1.01] transition-transform duration-300 group">
-          <img 
+          <Image 
             alt="Hero Image" 
             className="w-full h-[550px] object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIkceQ9T6c3Hw4N8zfUdc8QAx4gN7jsujbZJjMS-jUN7itjsOQZwejI9jfEt_lq6xE4-906zRc65rRkMIe8mb4yUof1SGqXqbB6hGhxrHy8PQPiwu4uCsqXnfvi0joXfgJtzlRq7PfzFB-xuaVXhKXeyX1iBV5KG1dm-bTDNGlsH1MqXhoWicIeTIwz5rm5nZwEWNo4HmtbEVhONMDVfgpDZAEkn5_ctz8ANxoJyfSbzKCh7M_UZNMF4m08fspyEYkPyNP8SW0rg" 
+            width={1400}
+            height={550}
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-transparent flex items-center">
             <div className="p-8 md:p-20 max-w-2xl">
@@ -116,10 +120,12 @@ export default function Home() {
           <h2 className="text-4xl font-bold font-headline text-center mb-12 text-secondary">Explore Our Craft</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="col-span-1 md:col-span-2 relative rounded-xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 shadow-[0_8px_24px_rgba(224,64,160,0.15)] group cursor-pointer h-96">
-              <img 
+              <Image 
                 alt="Amigurumi" 
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                className="object-cover group-hover:scale-105 transition-transform duration-500" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBHVp06Ne8gd87UtW5QtGmr2pQ5q5Q5uM8QETuPOY-YKqInbbkysn-UYTnCV0Is1NtLWpR2iP5Zg_kbomqe1wx1CSUcv6KYShE4lPvp9zrclTOrIMT9R_f8cEPsA1R29fNBumiVMOCBXgdvRJuZ5Zm1LOKOwVxHU1Xrl_9AzfFwuJ3Vvze6NDF8kn0_PQIt2RoEmEFCqlrLIMONcfBcDQ8Q_0F1PmIs69PlAWFqg1JXX43b_TrX0X7DCAZzHm2JWKX8Nvut9Bsng" 
+                fill
+                sizes="(max-width: 768px) 100vw, 66vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-on-background/80 to-transparent flex flex-col justify-end p-8">
                 <span className="bg-primary text-on-primary px-4 py-1.5 rounded-full text-xs font-bold w-max mb-3">Popular</span>
@@ -129,10 +135,12 @@ export default function Home() {
             </div>
             
             <div className="relative rounded-xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 shadow-[0_8px_24px_rgba(124,82,170,0.15)] group cursor-pointer h-96">
-              <img 
+              <Image 
                 alt="Home Decor" 
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                className="object-cover group-hover:scale-105 transition-transform duration-500" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrWziYvRHDGFKUsCxI4gAf5oD6g_ct3cpuLiNYft5iHYGGgC91jXj1VX-giSHHXbbhK6MqbLWNP1mBwxZJI9yRsdPEfs9TJGo-4EgA4MHcQkQhAWB8lI3bzSWJB7XXa9ny6BB60F3myAffwDj-hL3BaO0IuVy14-kG5DrY_1nXsNlblw_xfsZqvVTQ55DvxRw-eQZg5D-gftpbkj11X1-kBCsEpcpXv4PF88bHtLO2brzgaS5lOU8I3mWgPMOiuMlcTevUT60GYA" 
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-on-background/80 to-transparent flex flex-col justify-end p-8">
                 <h3 className="text-2xl font-bold text-surface mb-2 font-display">Home Decor</h3>
@@ -141,10 +149,12 @@ export default function Home() {
             </div>
 
             <div className="col-span-1 md:col-span-3 relative rounded-xl overflow-hidden hover:scale-[1.01] transition-transform duration-300 shadow-[0_8px_24px_rgba(0,150,204,0.15)] group cursor-pointer h-64">
-              <img 
+              <Image 
                 alt="Wearables" 
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                className="object-cover group-hover:scale-105 transition-transform duration-500" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_SvODx-iJHv8AKRsNTJdVgUk4rT7feeN9zZF1ds7v0hWRAQl02Ft8H7IVUh0PoEU2A7eT0yuAicWBLauIkgMYDd2xht-9ZNyLgMGCDnGJbMz3-rBdyIUt3p7xG0xj6vOTpElsip5lQw1_ACL8MhtnVsxmYmzDh2CTytdQctHUie_WKev_kw7E6GbUHfn8nlfq-DlYKMqSwan5LUJnAc3_CvJSXfTynjJI_uLKPz7tiw9n4_D8KwXeie8yN7bs6BrmHODq5BAfOA" 
+                fill
+                sizes="100vw"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-on-background/80 to-transparent flex flex-col justify-center p-8 md:p-16">
                 <h3 className="text-3xl font-bold text-surface mb-2 font-display">Wearables</h3>
@@ -223,10 +233,12 @@ export default function Home() {
           </div>
           
           <div className="relative h-[550px] rounded-xl overflow-hidden shadow-[0_8px_24px_rgba(124,82,170,0.2)]">
-            <img 
+            <Image 
               alt="Crafting Process" 
-              className="w-full h-full object-cover" 
+              className="object-cover" 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkgigYp-DgEhgz-ZOI5n669bGZdXwanfbkI1qRVIMTCLT_6UD77iGS5g71nR44isbdQgNsgfKQi1rY2A6xDZAZisQNnXPvn364k31Oigpcv1-gFzryyFfLK1ZDQ1jPSnezI_xNBMLqWvOL9FcRwJWrh09c3o0OiAbaFXLmzkWEH0qN_rukX_gnqo43zHdo6p1gKVMAo6YNmioazNezEjKrTVkFVdJBJu8vbE2PAMqDByojl6Isoxk7MGarECle4PPE6kFK8sSYUw" 
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-secondary/10 pointer-events-none" />
           </div>

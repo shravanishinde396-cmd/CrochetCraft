@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCartStore, CartProduct } from '../store/cartStore';
 import { ShoppingCart, Heart } from 'lucide-react';
 
@@ -65,10 +66,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
         <Link href={`/products/${product.slug}`}>
-          <img
+          <Image
             src={product.images?.[0] || 'https://via.placeholder.com/300?text=No+Image'}
             alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           />
         </Link>
         <button className="absolute top-3 right-3 bg-white/90 backdrop-blur text-outline hover:text-primary p-2 rounded-full shadow-sm hover:shadow-md transition-all active:scale-90 z-10">

@@ -2,8 +2,9 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '../store/authStore';
 import { apiFetch, API_BASE } from '../utils/apiFetch';
 import { ShieldAlert, BarChart3, Package, HeartHandshake, Tag, Plus, Edit, Trash2, X, RefreshCw } from 'lucide-react';
@@ -165,15 +166,7 @@ export default function AdminDashboard() {
     fetchCustomOrders();
   }, [user, accessToken]);
 
-  // Load products and categories on tab switch
-  useEffect(() => {
-    if (user?.role !== 'ADMIN') return;
-    if (activeTab === 'products') {
-      loadProductsAndCategories();
-    }
-  }, [activeTab, user]);
-
-  const loadProductsAndCategories = async () => {
+  const loadProductsAndCategories = useCallback(async () => {
     setLoadingProducts(true);
     try {
       // Load products
@@ -202,7 +195,15 @@ export default function AdminDashboard() {
     } finally {
       setLoadingProducts(false);
     }
-  };
+  }, [productForm.categoryId]);
+
+  // Load products and categories on tab switch
+  useEffect(() => {
+    if (user?.role !== 'ADMIN') return;
+    if (activeTab === 'products') {
+      loadProductsAndCategories();
+    }
+  }, [activeTab, user, loadProductsAndCategories]);
 
   const handleOpenAddProduct = () => {
     setEditingProduct(null);
@@ -569,10 +570,12 @@ export default function AdminDashboard() {
                     {products.map((prod) => (
                       <tr key={prod.id} className="hover:bg-surface-container/20 transition-colors">
                         <td className="px-6 py-4 flex items-center gap-4">
-                          <img
+                          <Image
                             src={prod.images?.[0] || '/images/products/placeholder.jpg'}
                             alt={prod.title}
-                            className="w-12 h-12 object-cover rounded-xl border border-outline-variant/30 bg-white"
+                            className="object-cover rounded-xl border border-outline-variant/30 bg-white"
+                            width={48}
+                            height={48}
                           />
                           <div>
                             <span className="font-bold text-on-surface block text-base leading-tight">{prod.title}</span>
@@ -978,7 +981,7 @@ export default function AdminDashboard() {
                           <div className="flex flex-wrap gap-3">
                             {currentImagesArray.map((imgUrl, idx) => (
                               <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-outline-variant group shadow-sm bg-white">
-                                <img src={imgUrl} alt="Preview" className="w-full h-full object-cover" />
+                                <Image src={imgUrl} alt="Preview" className="object-cover" fill sizes="64px" />
                                 <button
                                   type="button"
                                   onClick={() => {
