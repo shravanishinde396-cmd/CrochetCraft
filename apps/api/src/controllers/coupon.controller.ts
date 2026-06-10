@@ -65,16 +65,34 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
     data: { code: code.toUpperCase(), description, discountType, discountValue, minimumOrder, maximumDiscount, usageLimit, expiryDate: new Date(expiryDate), isFirstPurchase: isFirstPurchase || false, categoryId },
   });
 
-  // Query active newsletter subscribers and send them email notifications in the background
-  prisma.newsletterSubscriber.findMany({
-    where: { isSubscribed: true },
-    include: { user: true },
-  }).then(async (subscribers) => {
-    logger.info(`Sending new coupon email to ${subscribers.length} newsletter subscribers...`);
+  // Send email notifications to all registered customers and newsletter subscribers in the background
+  Promise.all([
+    prisma.user.findMany({
+      where: { isActive: true, role: 'CUSTOMER' },
+      select: { email: true, name: true }
+    }),
+    prisma.newsletterSubscriber.findMany({
+      where: { isSubscribed: true },
+      select: { email: true, user: { select: { name: true } } }
+    })
+  ]).then(async ([users, subscribers]) => {
+    const recipients = new Map<string, string>(); // email -> name
+
+    // Add newsletter subscribers
     for (const sub of subscribers) {
-      const recipientName = sub.user?.name || 'Craft Lover';
+      recipients.set(sub.email.toLowerCase(), sub.user?.name || 'Craft Lover');
+    }
+
+    // Add/override with registered customers
+    for (const u of users) {
+      recipients.set(u.email.toLowerCase(), u.name);
+    }
+
+    logger.info(`Sending new coupon email to ${recipients.size} unique recipients (customers and subscribers)...`);
+
+    for (const [email, name] of recipients.entries()) {
       const emailHtml = getNewOfferHtml(
-        recipientName,
+        name,
         coupon.code,
         coupon.discountValue,
         coupon.discountType,
@@ -83,13 +101,13 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
       );
 
       await sendMail({
-        to: sub.email,
+        to: email,
         subject: `New Offer: Get ${coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `Rs. ${coupon.discountValue}`} OFF!`,
         html: emailHtml,
       });
     }
   }).catch((err) => {
-    logger.error('Failed to notify subscribers about new coupon:', err);
+    logger.error('Failed to notify users about new coupon:', err);
   });
 
   res.status(201).json(new ApiResponse(201, coupon, 'Coupon created.'));
