@@ -11,17 +11,19 @@ const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'CrochetCraft Pro';
 if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.startsWith('re_')) {
   resend = new Resend(process.env.RESEND_API_KEY);
   logger.info('Resend email service configured.');
-} else {
-  logger.info('Resend API key not set or invalid. Configuring Nodemailer SMTP transport.');
+}
+
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT) || 465,
     secure: Number(process.env.SMTP_PORT) === 465,
     auth: {
-      user: process.env.SMTP_USER || '',
-      pass: process.env.SMTP_PASS || '',
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
+  logger.info('Nodemailer SMTP transport configured.');
 }
 
 export { resend, transporter, EMAIL_FROM, EMAIL_FROM_NAME };
