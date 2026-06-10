@@ -34,6 +34,10 @@ import adminRoutes from './routes/admin.routes';
 
 const app = express();
 
+// Trust the first proxy hop (Render, Heroku, etc.) so that
+// express-rate-limit and req.ip work correctly behind a reverse proxy.
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: false,
