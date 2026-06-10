@@ -2,7 +2,14 @@
 
 import { useAuthStore } from '../store/authStore';
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+let rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+if (rawApiUrl.endsWith('/')) {
+  rawApiUrl = rawApiUrl.slice(0, -1);
+}
+if (rawApiUrl.endsWith('/api')) {
+  rawApiUrl = rawApiUrl.slice(0, -4);
+}
+export const API_BASE = rawApiUrl;
 
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
