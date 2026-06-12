@@ -240,3 +240,130 @@ export const getNewOfferHtml = (name: string, code: string, discountValue: numbe
     </div>
   `);
 };
+
+export const getAdminCouponGeneratedHtml = (coupon: any) => {
+  const discountStr = coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `Rs. ${coupon.discountValue}`;
+  const formattedExpiry = new Date(coupon.expiryDate).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  return getEmailLayout('Admin Notification: New Coupon Generated', `
+    <h2>Admin Alert: New Coupon Created</h2>
+    <p>A new coupon has been generated on the platform. Here are the details:</p>
+    <table class="table">
+      <tr>
+        <td><strong>Coupon Code:</strong></td>
+        <td><strong style="color: ${BRAND_COLOR_PRIMARY}; font-size: 16px;">${coupon.code}</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Discount:</strong></td>
+        <td>${discountStr} OFF</td>
+      </tr>
+      <tr>
+        <td><strong>Minimum Order:</strong></td>
+        <td>Rs. ${coupon.minimumOrder}</td>
+      </tr>
+      <tr>
+        <td><strong>Expiry Date:</strong></td>
+        <td>${formattedExpiry}</td>
+      </tr>
+      <tr>
+        <td><strong>First Purchase Only:</strong></td>
+        <td>${coupon.isFirstPurchase ? 'Yes' : 'No'}</td>
+      </tr>
+      <tr>
+        <td><strong>Usage Limit:</strong></td>
+        <td>${coupon.usageLimit || 'Unlimited'}</td>
+      </tr>
+      ${coupon.description ? `<tr><td><strong>Description:</strong></td><td>${coupon.description}</td></tr>` : ''}
+    </table>
+    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/coupons" class="btn">View Coupons Dashboard</a>
+  `);
+};
+
+export const getAdminOrderPlacedHtml = (order: any, customerName: string, customerEmail: string) => {
+  const itemsHtml = order.items.map((item: any) => `
+    <tr>
+      <td>${item.title} x ${item.quantity}</td>
+      <td class="price-text">Rs. ${item.price * item.quantity}</td>
+    </tr>
+  `).join('');
+
+  return getEmailLayout(`Admin Notification: New Order #${order.orderNumber}`, `
+    <h2>Admin Alert: New Order Received!</h2>
+    <p>Order <strong>#${order.orderNumber}</strong> has been placed by <strong>${customerName}</strong> (${customerEmail}).</p>
+    
+    <h3>Order Summary</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+        <tr>
+          <td>Subtotal</td>
+          <td>Rs. ${order.subtotal}</td>
+        </tr>
+        <tr>
+          <td>Discount</td>
+          <td>-Rs. ${order.discountAmount}</td>
+        </tr>
+        <tr>
+          <td>Tax (18% GST)</td>
+          <td>Rs. ${order.taxAmount}</td>
+        </tr>
+        <tr>
+          <td>Shipping Charge</td>
+          <td>Rs. ${order.shippingCharge}</td>
+        </tr>
+        <tr style="border-top: 2px solid ${BRAND_COLOR_PRIMARY};">
+          <td><strong>Total Amount</strong></td>
+          <td class="price-text"><strong>Rs. ${order.total}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Shipping & Payment</h3>
+    <table class="table">
+      <tr>
+        <td><strong>Payment Method:</strong></td>
+        <td>${order.paymentMethod}</td>
+      </tr>
+      <tr>
+        <td><strong>Payment Status:</strong></td>
+        <td>${order.paymentStatus}</td>
+      </tr>
+      ${order.notes ? `<tr><td><strong>Customer Notes:</strong></td><td>${order.notes}</td></tr>` : ''}
+    </table>
+
+    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/orders/${order.orderNumber}" class="btn">Manage Order in Admin Portal</a>
+  `);
+};
+
+export const getAdminNewUserRegisteredHtml = (user: any) => {
+  return getEmailLayout('Admin Notification: New User Registered', `
+    <h2>Admin Alert: New User Registered</h2>
+    <p>A new customer has just joined CrochetCraft Pro!</p>
+    <table class="table">
+      <tr>
+        <td><strong>Full Name:</strong></td>
+        <td>${user.name}</td>
+      </tr>
+      <tr>
+        <td><strong>Email:</strong></td>
+        <td>${user.email}</td>
+      </tr>
+      ${user.phone ? `<tr><td><strong>Phone Number:</strong></td><td>${user.phone}</td></tr>` : ''}
+      <tr>
+        <td><strong>Registered At:</strong></td>
+        <td>${new Date(user.createdAt).toLocaleString('en-IN')}</td>
+      </tr>
+    </table>
+    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/users" class="btn">View User List</a>
+  `);
+};

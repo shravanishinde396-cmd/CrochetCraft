@@ -4,7 +4,8 @@ import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { sendMail } from '../utils/emailSender';
-import { getNewOfferHtml } from '../utils/emailTemplates';
+import { ADMIN_EMAIL } from '../config/email';
+import { getNewOfferHtml, getAdminCouponGeneratedHtml } from '../utils/emailTemplates';
 import logger from '../utils/logger';
 
 // POST /coupons/validate
@@ -65,6 +66,16 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
     data: { code: code.toUpperCase(), description, discountType, discountValue, minimumOrder, maximumDiscount, usageLimit, expiryDate: new Date(expiryDate), isFirstPurchase: isFirstPurchase || false, categoryId },
   });
 
+  // Send admin notification about coupon generation in the background
+  const adminCouponHtml = getAdminCouponGeneratedHtml(coupon);
+  sendMail({
+    to: ADMIN_EMAIL,
+    subject: `Admin Alert: New Coupon Generated - ${coupon.code}`,
+    html: adminCouponHtml,
+  }).catch((err) => {
+    logger.error(`Failed to send coupon generation email to admin:`, err);
+  });
+
   // Send email notifications to all registered customers and newsletter subscribers in the background
   Promise.all([
     prisma.user.findMany({
@@ -90,7 +101,7 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
 
     logger.info(`Sending new coupon email to ${recipients.size} unique recipients (customers and subscribers)...`);
 
-    const sendPromises = Array.from(recipients.entries()).map(([email, name]) => {
+    for (const [email, name] of recipients.entries()) {
       const emailHtml = getNewOfferHtml(
         name,
         coupon.code,
@@ -100,16 +111,18 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
         coupon.description || undefined
       );
 
-      return sendMail({
-        to: email,
-        subject: `New Offer: Get ${coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `Rs. ${coupon.discountValue}`} OFF!`,
-        html: emailHtml,
-      }).catch(err => {
+      try {
+        await sendMail({
+          to: email,
+          subject: `New Offer: Get ${coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `Rs. ${coupon.discountValue}`} OFF!`,
+          html: emailHtml,
+        });
+        // 300ms delay between emails to avoid hitting rate limits or SMTP connection pool limits
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      } catch (err) {
         logger.error(`Failed to send coupon email to ${email}:`, err);
-      });
-    });
-
-    await Promise.allSettled(sendPromises);
+      }
+    }
   }).catch((err) => {
     logger.error('Failed to notify users about new coupon:', err);
   });

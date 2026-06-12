@@ -3,6 +3,8 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { prisma } from './database';
 import logger from '../utils/logger';
+import { sendMail } from '../utils/emailSender';
+import { getWelcomeEmailHtml } from '../utils/emailTemplates';
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'your-64-char-access-secret';
 
@@ -84,6 +86,16 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
               emailVerified: true,
               role: 'CUSTOMER',
             },
+          });
+
+          // Send welcome email in the background
+          const welcomeHtml = getWelcomeEmailHtml(newUser.name);
+          sendMail({
+            to: newUser.email,
+            subject: 'Welcome to CrochetCraft Pro!',
+            html: welcomeHtml,
+          }).catch((err) => {
+            logger.error(`Failed to send welcome email to ${newUser.email}:`, err);
           });
 
           return done(null, newUser);

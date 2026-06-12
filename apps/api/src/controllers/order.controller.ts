@@ -5,7 +5,8 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { generateOrderNumber } from '../utils/generateOrderNumber';
 import { sendMail } from '../utils/emailSender';
-import { getOrderConfirmationHtml } from '../utils/emailTemplates';
+import { ADMIN_EMAIL } from '../config/email';
+import { getOrderConfirmationHtml, getAdminOrderPlacedHtml } from '../utils/emailTemplates';
 import logger from '../utils/logger';
 
 // POST /orders
@@ -106,26 +107,36 @@ export const createOrder = asyncHandler(async (req: any, res: Response) => {
   // Clear cart
   await prisma.cartItem.deleteMany({ where: { userId: req.user.id } });
 
-  // Send order confirmation email in the background
+  // Send order confirmation and admin notification emails in the background
   prisma.user.findUnique({
     where: { id: req.user.id }
   }).then(async (user) => {
-    if (user && user.email) {
-      const emailHtml = getOrderConfirmationHtml(
-        user.name,
-        order.orderNumber,
-        order.items,
-        order.total
-      );
+    if (user) {
+      if (user.email) {
+        const emailHtml = getOrderConfirmationHtml(
+          user.name,
+          order.orderNumber,
+          order.items,
+          order.total
+        );
 
+        await sendMail({
+          to: user.email,
+          subject: `Order Confirmed: #${order.orderNumber}`,
+          html: emailHtml,
+        });
+      }
+
+      // Send admin notification email
+      const adminOrderHtml = getAdminOrderPlacedHtml(order, user.name, user.email);
       await sendMail({
-        to: user.email,
-        subject: `Order Confirmed: #${order.orderNumber}`,
-        html: emailHtml,
+        to: ADMIN_EMAIL,
+        subject: `Admin Alert: New Order Placed #${order.orderNumber}`,
+        html: adminOrderHtml,
       });
     }
   }).catch((err) => {
-    logger.error(`Failed to send order confirmation email for order ${order.orderNumber}:`, err);
+    logger.error(`Failed to send order notification emails for order ${order.orderNumber}:`, err);
   });
 
   res.status(201).json(new ApiResponse(201, order, 'Order created successfully.'));

@@ -26,4 +26,8 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   logger.info('Nodemailer SMTP transport configured.');
 }
 
-export { resend, transporter, EMAIL_FROM, EMAIL_FROM_NAME };
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL !== 'admin@crochetcraftpro.com'
+  ? process.env.ADMIN_EMAIL
+  : (process.env.SMTP_USER || 'admin@crochetcraftpro.com');
+
+export { resend, transporter, EMAIL_FROM, EMAIL_FROM_NAME, ADMIN_EMAIL };

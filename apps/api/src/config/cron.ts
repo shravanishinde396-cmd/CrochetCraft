@@ -2,6 +2,7 @@ import { CronJob } from 'cron';
 import { prisma } from './database';
 import { sendMail } from '../utils/emailSender';
 import { getAbandonedCartHtml, getLowStockAlertHtml } from '../utils/emailTemplates';
+import { ADMIN_EMAIL } from './email';
 import logger from '../utils/logger';
 
 // 1. Abandoned Cart Recovery (Daily)
@@ -77,12 +78,10 @@ export const lowStockJob = new CronJob('0 */12 * * *', async () => {
 
     if (lowStockProducts.length === 0) return;
 
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@crochetcraftpro.com';
-
     for (const prod of lowStockProducts) {
       const html = getLowStockAlertHtml(prod.title, prod.sku, prod.stock);
       await sendMail({
-        to: adminEmail,
+        to: ADMIN_EMAIL,
         subject: `Low Stock Alert: ${prod.title}`,
         html,
       });

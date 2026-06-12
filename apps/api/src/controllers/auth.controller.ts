@@ -7,6 +7,10 @@ import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { generateAccessToken, generateRefreshToken } from '../utils/generateToken';
+import { sendMail } from '../utils/emailSender';
+import { ADMIN_EMAIL } from '../config/email';
+import { getWelcomeEmailHtml, getPasswordResetHtml, getAdminNewUserRegisteredHtml } from '../utils/emailTemplates';
+import logger from '../utils/logger';
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-64-char-refresh-secret';
 
@@ -28,6 +32,26 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   await prisma.refreshToken.create({
     data: { token: refreshToken, userId: user.id, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+  });
+
+  // Send welcome email in the background
+  const welcomeHtml = getWelcomeEmailHtml(user.name);
+  sendMail({
+    to: user.email,
+    subject: 'Welcome to CrochetCraft Pro!',
+    html: welcomeHtml,
+  }).catch((err) => {
+    logger.error(`Failed to send welcome email to ${user.email}:`, err);
+  });
+
+  // Send notification email to admin in the background
+  const adminHtml = getAdminNewUserRegisteredHtml(user);
+  sendMail({
+    to: ADMIN_EMAIL,
+    subject: `Admin Alert: New User Registered - ${user.name}`,
+    html: adminHtml,
+  }).catch((err) => {
+    logger.error(`Failed to send admin user registration notification for ${user.email}:`, err);
   });
 
   res.status(201).json(new ApiResponse(201, { user, accessToken, refreshToken }, 'Registration successful.'));
@@ -115,7 +139,17 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
     data: { token: hashedToken, userId: user.id, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
   });
 
-  // TODO: Send email with reset link containing resetToken
+  // Send password reset email in the background
+  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+  const resetHtml = getPasswordResetHtml(user.name, resetUrl);
+  sendMail({
+    to: user.email,
+    subject: 'Reset Your Password - CrochetCraft Pro',
+    html: resetHtml,
+  }).catch((err) => {
+    logger.error(`Failed to send password reset email to ${user.email}:`, err);
+  });
+
   res.json(new ApiResponse(200, { resetToken }, 'Password reset link sent to your email.'));
 });
 
