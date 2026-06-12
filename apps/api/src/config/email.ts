@@ -14,16 +14,23 @@ if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.startsWith('re_')) 
 }
 
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const smtpPort = Number(process.env.SMTP_PORT) || 465;
   transporter = nodemailer.createTransport({
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: Number(process.env.SMTP_PORT) || 465,
-    secure: Number(process.env.SMTP_PORT) === 465,
+    port: smtpPort,
+    secure: smtpPort === 465,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
-  logger.info('Nodemailer SMTP transport configured.');
+  logger.info('Nodemailer SMTP pooled transport configured.');
 }
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL !== 'admin@crochetcraftpro.com'
