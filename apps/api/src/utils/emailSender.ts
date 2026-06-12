@@ -32,6 +32,33 @@ export const sendMail = async ({ to, subject, html }: SendMailParams) => {
       return data;
     } catch (error: any) {
       const errMsg = error?.message || JSON.stringify(error) || String(error);
+      
+      // If it failed, try to fallback to onboarding@resend.dev
+      if (EMAIL_FROM !== 'onboarding@resend.dev') {
+        try {
+          logger.info(`Retrying Resend with onboarding@resend.dev for ${to}...`);
+          const { data, error: retryError } = await resend.emails.send({
+            from: `${EMAIL_FROM_NAME} <onboarding@resend.dev>`,
+            to: [to],
+            subject,
+            html,
+          });
+          if (retryError) {
+            throw retryError;
+          }
+          logger.info(`Email sent via Resend (onboarding fallback) to ${to}: ${subject}`);
+          
+          await db.emailLog.create({
+            data: { to, subject, service: 'RESEND_FALLBACK', status: 'SUCCESS' }
+          }).catch((dbErr: any) => logger.error('Failed to write email log:', dbErr));
+
+          return data;
+        } catch (retryErr: any) {
+          const retryErrMsg = retryErr?.message || JSON.stringify(retryErr) || String(retryErr);
+          logger.warn(`Failed to send email to ${to} via Resend onboarding retry: ${retryErrMsg}`);
+        }
+      }
+
       logger.warn(`Failed to send email to ${to} via Resend. Falling back to SMTP if available. Error: ${errMsg}`);
       
       await db.emailLog.create({
