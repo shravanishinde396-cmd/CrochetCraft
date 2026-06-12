@@ -12,6 +12,60 @@ export const sendMail = async ({ to, subject, html }: SendMailParams) => {
   let resendFailed = false;
   const db = prisma as any;
 
+  // 1. Try Brevo (HTTP API) if configured
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const senderEmail = process.env.EMAIL_FROM && process.env.EMAIL_FROM !== 'noreply@crochetcraftpro.com'
+        ? process.env.EMAIL_FROM
+        : (process.env.SMTP_USER || 'shravanishinde396@gmail.com');
+
+      logger.info(`Sending email to ${to} via Brevo API...`);
+      
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: {
+            name: EMAIL_FROM_NAME,
+            email: senderEmail,
+          },
+          to: [
+            {
+              email: to,
+            },
+          ],
+          subject,
+          htmlContent: html,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Brevo API error: ${response.status} - ${errText}`);
+      }
+
+      const responseData = await response.json();
+      logger.info(`Email sent via Brevo to ${to}: ${subject}`);
+      
+      await db.emailLog.create({
+        data: { to, subject, service: 'BREVO', status: 'SUCCESS' }
+      }).catch((dbErr: any) => logger.error('Failed to write email log:', dbErr));
+
+      return responseData;
+    } catch (error: any) {
+      const errMsg = error?.message || JSON.stringify(error) || String(error);
+      logger.error(`Failed to send email to ${to} via Brevo API: ${errMsg}`);
+      
+      await db.emailLog.create({
+        data: { to, subject, service: 'BREVO', status: 'FAILED', error: errMsg }
+      }).catch((dbErr: any) => logger.error('Failed to write email log:', dbErr));
+    }
+  }
+
   if (resend) {
     try {
       const { data, error } = await resend.emails.send({

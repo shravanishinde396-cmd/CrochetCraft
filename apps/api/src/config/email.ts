@@ -13,6 +13,10 @@ if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.startsWith('re_')) 
   logger.info('Resend email service configured.');
 }
 
+if (process.env.BREVO_API_KEY) {
+  logger.info('Brevo HTTP API email service configured.');
+}
+
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   const smtpPort = Number(process.env.SMTP_PORT) || 465;
   transporter = nodemailer.createTransport({
