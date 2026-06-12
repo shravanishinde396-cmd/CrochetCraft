@@ -29,6 +29,9 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     tls: {
       rejectUnauthorized: false,
     },
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
   });
   logger.info('Nodemailer SMTP pooled transport configured.');
 }
