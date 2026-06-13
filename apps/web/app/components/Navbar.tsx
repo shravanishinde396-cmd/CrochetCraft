@@ -175,8 +175,8 @@ export default function Navbar() {
 
       {/* Profile Details Modal */}
       {mounted && profileModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] px-4">
-          <div className="bg-white border border-outline-variant rounded-2xl p-6 w-full max-w-sm shadow-2xl relative animate-in fade-in zoom-in duration-200 text-on-background">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] px-4 overflow-y-auto py-10">
+          <div className="bg-white border border-outline-variant rounded-2xl p-6 w-full max-w-sm shadow-2xl relative animate-in fade-in zoom-in duration-200 text-on-background my-auto">
             <button
               onClick={() => setProfileModalOpen(false)}
               className="absolute top-4 right-4 text-on-surface-variant hover:text-primary p-1 rounded-full hover:bg-surface-container transition-colors"
@@ -199,6 +199,14 @@ export default function Navbar() {
             </div>
 
             <div className="mt-6 space-y-4 border-t border-outline-variant/50 pt-4">
+              <div className="flex items-center space-x-3">
+                <User className="w-4 h-4 text-primary shrink-0" />
+                <div className="text-left">
+                  <div className="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Full Name</div>
+                  <div className="text-sm font-semibold text-on-background">{user?.name}</div>
+                </div>
+              </div>
+
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
                 <div className="text-left">
