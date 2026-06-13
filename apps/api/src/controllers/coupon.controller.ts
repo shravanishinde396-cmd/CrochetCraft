@@ -79,7 +79,6 @@ export const createCoupon = asyncHandler(async (req: any, res: Response) => {
   // Send email notifications to all registered customers and newsletter subscribers in the background
   Promise.all([
     prisma.user.findMany({
-      where: { isActive: true },
       select: { email: true, name: true }
     }),
     prisma.newsletterSubscriber.findMany({
