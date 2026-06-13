@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
-import { ShoppingBag, User, LogOut, Menu, X, Shield, ToyBrick, Truck } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Menu, X, Shield, ToyBrick, Truck, Phone, Mail, IdCard } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuthStore();
   const { items } = useCartStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
@@ -72,14 +73,39 @@ export default function Navbar() {
               >
                 <User className="w-5 h-5 text-on-background" />
                 <span className="text-xs font-semibold text-on-background hidden md:inline">{user?.name}</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden md:inline-block ${
+                  user?.role === 'ADMIN' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-pink-100 text-pink-700 border border-pink-200'
+                }`}>
+                  {user?.role === 'ADMIN' ? 'Admin' : 'User'}
+                </span>
               </button>
 
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-outline-variant rounded-lg shadow-lg py-2 z-50">
-                  <div className="px-4 py-2 text-xs text-on-surface-variant font-bold">
-                    Logged in as: <span className="text-primary">{user?.name}</span>
+                  <div className="px-4 py-2 text-xs text-on-surface-variant font-bold flex flex-col gap-1">
+                    <div>Logged in as: <span className="text-primary">{user?.name}</span></div>
+                    <div>
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        user?.role === 'ADMIN' ? 'bg-red-100 text-red-700' : 'bg-pink-100 text-pink-700'
+                      }`}>
+                        {user?.role === 'ADMIN' ? 'Admin' : 'User'}
+                      </span>
+                    </div>
                   </div>
                   <hr className="my-1 border-outline-variant/50" />
+                  
+                  {/* View Profile Option */}
+                  <button
+                    onClick={() => {
+                      setProfileModalOpen(true);
+                      setUserDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-container flex items-center space-x-2"
+                  >
+                    <User className="w-4 h-4 text-primary" />
+                    <span>View Profile</span>
+                  </button>
+
                   <Link
                     href="/track-order"
                     onClick={() => setUserDropdownOpen(false)}
@@ -128,11 +154,85 @@ export default function Navbar() {
           <Link href="/products" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
           <Link href="/custom" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Custom Request</Link>
           {mounted && isAuthenticated && (
-            <Link href="/track-order" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Track Orders</Link>
+            <>
+              <button 
+                className="font-medium text-left flex items-center gap-1"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setProfileModalOpen(true);
+                }}
+              >
+                My Profile
+              </button>
+              <Link href="/track-order" className="font-medium" onClick={() => setMobileMenuOpen(false)}>Track Orders</Link>
+            </>
           )}
           {mounted && user?.role === 'ADMIN' && (
             <Link href="/admin" className="text-secondary font-bold" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link>
           )}
+        </div>
+      )}
+
+      {/* Profile Details Modal */}
+      {mounted && profileModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] px-4">
+          <div className="bg-white border border-outline-variant rounded-2xl p-6 w-full max-w-sm shadow-2xl relative animate-in fade-in zoom-in duration-200 text-on-background">
+            <button
+              onClick={() => setProfileModalOpen(false)}
+              className="absolute top-4 right-4 text-on-surface-variant hover:text-primary p-1 rounded-full hover:bg-surface-container transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center mt-2">
+              <div className="bg-primary-container/30 text-primary p-4 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                <User className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-primary">{user?.name}</h3>
+              <span className={`mt-1 px-3 py-1 rounded-full text-xs font-semibold border ${
+                user?.role === 'ADMIN' 
+                  ? 'bg-red-100 text-red-700 border-red-200' 
+                  : 'bg-pink-100 text-pink-700 border-pink-200'
+              }`}>
+                {user?.role === 'ADMIN' ? 'Administrator' : 'Customer Account'}
+              </span>
+            </div>
+
+            <div className="mt-6 space-y-4 border-t border-outline-variant/50 pt-4">
+              <div className="flex items-center space-x-3">
+                <Mail className="w-4 h-4 text-primary shrink-0" />
+                <div className="text-left">
+                  <div className="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Email Address</div>
+                  <div className="text-sm font-semibold text-on-background">{user?.email}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <Phone className="w-4 h-4 text-primary shrink-0" />
+                <div className="text-left">
+                  <div className="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Phone Number</div>
+                  <div className="text-sm font-semibold text-on-background">{user?.phone || 'Not Provided'}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <IdCard className="w-4 h-4 text-primary shrink-0" />
+                <div className="text-left">
+                  <div className="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">User Account ID</div>
+                  <div className="text-xs font-mono text-on-surface-variant break-all">{user?.id}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={() => setProfileModalOpen(false)}
+                className="w-full bg-primary text-on-primary py-2 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-md"
+              >
+                Close Profile
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </header>
