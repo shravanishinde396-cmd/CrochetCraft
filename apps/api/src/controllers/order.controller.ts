@@ -156,7 +156,11 @@ export const getMyOrders = asyncHandler(async (req: any, res: Response) => {
     prisma.order.findMany({
       where, skip, take: limitNum,
       orderBy: { createdAt: 'desc' },
-      include: { items: { include: { product: { select: { slug: true, images: true } } } }, statusHistory: { orderBy: { createdAt: 'desc' } } },
+      include: {
+        items: { include: { product: { select: { slug: true, images: true } } } },
+        statusHistory: { orderBy: { createdAt: 'desc' } },
+        address: true,
+      },
     }),
     prisma.order.count({ where }),
   ]);
